@@ -4,12 +4,12 @@ import org.springframework.stereotype.Service;
 
 import org.web3j.abi.EventEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
+import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Event;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthLog.LogResult;
@@ -37,8 +37,8 @@ public class BlockchainService {
     public static final Event UPLOAD_DATA_EVENT = new Event(
             "UploadData",
             Arrays.asList(
-                    new org.web3j.abi.TypeReference<Utf8String>() {}, // docId
-                    new org.web3j.abi.TypeReference<Uint256>() {} // sessionId
+                    new TypeReference<Utf8String>() {}, // docId
+                    new TypeReference<Uint256>() {} // sessionId
             )
     );
 

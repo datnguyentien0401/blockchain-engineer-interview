@@ -7,7 +7,6 @@ import org.web3j.crypto.Sign;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 
-import java.math.BigInteger;
 import java.security.Security;
 import java.util.Base64;
 
@@ -59,7 +58,6 @@ public final class Integration {
             final byte[] geneDataHash = Hash.sha256(encryptedGene);
             // Sign the hash
             final Sign.SignatureData signature = Sign.signMessage(geneDataHash, credentials.getEcKeyPair());
-            // Combine the r, s, and v components of the signature
             final byte[] signatureBytes = new byte[65];
             System.arraycopy(signature.getR(), 0, signatureBytes, 0, 32);
             System.arraycopy(signature.getS(), 0, signatureBytes, 32, 32);
@@ -75,18 +73,18 @@ public final class Integration {
             System.out.println("Save gene success - FileId: " + fileId);
 
             //Upload data to blockchain
-            final String transactionHash = blockchainService.uploadData(fileId);
-            System.out.println("Uploaded data to blockchain success - Transaction hash: " + transactionHash);
-
-            final BigInteger sessionId = blockchainService.handleUploadDataEvent(fileId);
+//            final String transactionHash = blockchainService.uploadData(fileId);
+//            System.out.println("Uploaded data to blockchain success - Transaction hash: " + transactionHash);
+//
+//            final BigInteger sessionId = blockchainService.handleUploadDataEvent(fileId);
 
             //Calculate risk score
             final int riskScore = teeService.calculateRiskCore(geneData);
             System.out.println("Risk score: " + riskScore);
 
             //Confirm
-            blockchainService.confirm(fileId, geneDataHashBase64, signatureBase64, sessionId, BigInteger.valueOf(riskScore));
-            System.out.println("Confirm transaction");
+//            blockchainService.confirm(fileId, geneDataHashBase64, signatureBase64, sessionId, BigInteger.valueOf(riskScore));
+//            System.out.println("Confirm transaction");
 
             //verify signature
             final boolean valid = storageService.verifySignature(fileId, credentials.getEcKeyPair());
@@ -97,7 +95,7 @@ public final class Integration {
             System.out.println("Retrieve encrypted data success");
 
             //Decrypt gene data
-            final String decryptGeneData = teeService.decryptGeneData(credentials.getEcKeyPair().getPrivateKey(), geneEncryptedData);
+            final String decryptGeneData = teeService.decryptGeneData(credentials.getEcKeyPair(), geneEncryptedData);
             System.out.println("Decrypted data success: " + decryptGeneData);
 
         } catch (Exception e) {

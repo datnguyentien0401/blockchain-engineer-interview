@@ -16,8 +16,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.example.genomicserver.dto.Gene;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
 public class StorageService {
 
@@ -83,8 +81,6 @@ public class StorageService {
 
             final byte[] signatureNoRecoverId = new byte[64];
             System.arraycopy(gene.getSignature(), 0, signatureNoRecoverId, 0, 64);
-
-//            final ECKeyPair keyPair = ECKeyPair.create(publicKeyBytes);
 
             return Sign.signedMessageToKey(gene.getHash(), toSignatureData(gene.getSignature()))
                        .equals(keyPair.getPublicKey());
