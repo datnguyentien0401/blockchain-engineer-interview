@@ -1,6 +1,6 @@
 # Getting started
 
-The flow of key features to demonstrate the interaction between the #Components in the Genomic application
+The flow of key features to demonstrate the interaction between the #Components in the Genomic application.
 The flow implementation example in Integration.java
 
 ## Flow Overview
@@ -19,7 +19,6 @@ The flow implementation example in Integration.java
 
 ## Run
 ```bash
-cd genomic-server
 ./gradlew build
 ./gradlew run
 ```
