@@ -2,8 +2,19 @@ package com.example.genomicserver.service;
 
 import org.springframework.stereotype.Service;
 
+import org.web3j.abi.EventEncoder;
+import org.web3j.abi.FunctionReturnDecoder;
+import org.web3j.abi.TypeReference;
+import org.web3j.abi.datatypes.Event;
+import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.Utf8String;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.web3j.protocol.core.methods.request.EthFilter;
+import org.web3j.protocol.core.methods.response.EthLog.LogResult;
+import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tx.RawTransactionManager;
 import org.web3j.tx.gas.DefaultGasProvider;
@@ -13,6 +24,8 @@ import org.web3j.tx.gas.StaticGasProvider;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -26,10 +39,15 @@ import io.reactivex.schedulers.Schedulers;
 
 @Service
 public class BlockchainService {
-    private static final String WALLET_ADDRESS = "0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC";
+    private static final String WALLET_ADDRESS = "0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc";
 
     private final Web3j web3j;
     private final Controller controller;
+
+    public static final Event UPLOADDATA_EVENT = new Event("UploadData",
+                                                           Arrays.<TypeReference<?>>asList(
+                                                                   new TypeReference<Utf8String>() {},
+                                                                   new TypeReference<Uint256>() {}));
 
     public BlockchainService(Web3j web3j, Credentials credentials) throws Exception {
         this.web3j = web3j;
@@ -83,32 +101,49 @@ public class BlockchainService {
     }
 
     public BigInteger handleUploadDataEvent(String fileId) throws Exception {
-        final CountDownLatch latch = new CountDownLatch(1);
-        final BigInteger latestBlock = web3j.ethBlockNumber().send().getBlockNumber();
+//        final Flowable<UploadDataEventResponse> uploadDataEventResponseFlowable = controller.uploadDataEventFlowable(
+//                DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST);
 
-        BigInteger fromBlock = latestBlock.subtract(BigInteger.TEN);
-        if (fromBlock.signum() < 0) {
-            fromBlock = BigInteger.ZERO;
-        }
+//        final AtomicReference<BigInteger> sessionId = new AtomicReference<>();
 
-        final Flowable<UploadDataEventResponse> uploadDataEventResponseFlowable = controller.uploadDataEventFlowable(
-                new DefaultBlockParameterNumber(fromBlock), new DefaultBlockParameterNumber(latestBlock));
+//        uploadDataEventResponseFlowable.subscribe(eventResponse -> {
+//            final String docId = eventResponse.docId;
+//            if (docId.equals(fileId)) {
+//                System.out.println("UploadData Event - docId: " + docId + ", sessionId: " + eventResponse.sessionId);
+//                sessionId.set(eventResponse.sessionId);
+//            }
+//        }, error -> {
+//            throw new Exception("Error occurred while listening for events: " + error.getMessage());
+//        });
 
-        final AtomicReference<BigInteger> sessionId = new AtomicReference<>();
+        final EthFilter filter = new EthFilter(
+                DefaultBlockParameterName.EARLIEST,
+                DefaultBlockParameterName.LATEST,
+                WALLET_ADDRESS
+        );
 
-        uploadDataEventResponseFlowable.subscribeOn(Schedulers.io()).subscribe(eventResponse -> {
-            final String docId = eventResponse.docId;
-            if (docId.equals(fileId)) {
-                System.out.println("UploadData Event - docId: " + docId + ", sessionId: " + eventResponse.sessionId);
-                sessionId.set(eventResponse.sessionId);
+        final String encodedEventSignature = EventEncoder.encode(UPLOADDATA_EVENT);
+        filter.addSingleTopic(encodedEventSignature);
+
+        final List<LogResult> logs = web3j.ethGetLogs(filter).send().getLogs();
+        for (var logResult : logs) {
+            final Log log = (Log) logResult.get();
+            final List<Type> eventValues = FunctionReturnDecoder.decode(
+                    log.getData(), UPLOADDATA_EVENT.getParameters()
+            );
+
+            if (eventValues.size() == 2) {
+                final Utf8String docId = (Utf8String) eventValues.get(0);
+                final Uint256 sessionId = (Uint256) eventValues.get(1);
+
+                if (docId.getValue().equals(fileId)) {
+                    System.out.printf("Found Event - DocId: %s - SessionId: %s%n", docId.getValue(), sessionId.getValue().toString());
+                    return sessionId.getValue();
+                }
             }
-            latch.countDown();
-        }, error -> {
-            latch.countDown();
-            throw new Exception("Error occurred while listening for events: " + error.getMessage());
-        });
-        latch.await(1, TimeUnit.MINUTES);
-        return sessionId.get();
+        }
+        return null;
+//        return sessionId.get();
     }
 }
 
