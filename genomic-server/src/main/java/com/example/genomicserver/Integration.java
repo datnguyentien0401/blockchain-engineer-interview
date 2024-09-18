@@ -31,7 +31,7 @@ public final class Integration {
             final TEEService teeService = new TEEService();
             final StorageService storageService = new StorageService();
 
-            final Web3j web3 = Web3j.build(new HttpService("http://localhost:9650/ext/bc/LIFENetwork/rpc"));
+            final Web3j web3 = Web3j.build(new HttpService("https://api.avax-test.network/ext/bc/C/rpc"));
             final Credentials credentials = Credentials.create("56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027");
             final ECKeyPair keyPair = credentials.getEcKeyPair();
 

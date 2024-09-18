@@ -25,7 +25,6 @@ public class TEEService {
 
         final BigInteger hashInt = new BigInteger(1, hash);
 
-        // Modulo 4 and adding 1 to get the risk score between 1 and 4
         final BigInteger riskScore = hashInt.mod(BigInteger.valueOf(4)).add(BigInteger.ONE);
         return riskScore.intValue();
     }

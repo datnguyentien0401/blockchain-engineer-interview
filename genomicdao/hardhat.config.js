@@ -14,6 +14,11 @@ module.exports = {
       url: 'http://localhost:9650/ext/bc/LIFENetwork/rpc',
       chainId: 9999,
       accounts: [`0x5ff2266cb45528d048c3356fa958682b293cfecb080573a292789ecd52afa8e7`]
+    },
+    avalancheFuji: {
+      url: 'https://api.avax-test.network/ext/bc/C/rpc',
+      chainId: 43113,
+      accounts: [`0x5ff2266cb45528d048c3356fa958682b293cfecb080573a292789ecd52afa8e7`]
     }
   }
 };
