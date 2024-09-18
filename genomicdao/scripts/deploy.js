@@ -19,6 +19,11 @@ async function main() {
   const Controller = await ethers.getContractFactory("Controller");
   const controller = await Controller.deploy(geneNFT.target, pcspToken.target);
   console.log("Controller deployed to:", controller.target);
+
+  // Transfer ownership of GeneNTF and PCSPToken to Controller contract
+  await geneNFT.transferOwnership(controller.target);
+  await pcspToken.transferOwnership(controller.target);
+  console.log("Transferred to Controller.");
 }
 
 main().catch((error) => {

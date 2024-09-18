@@ -3,22 +3,19 @@ package com.example.genomicserver.service;
 import org.springframework.stereotype.Service;
 
 import org.web3j.abi.EventEncoder;
-import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Event;
-import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthLog.LogResult;
-import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tx.RawTransactionManager;
-import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
+import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.tx.gas.StaticGasProvider;
 
 import java.io.IOException;
@@ -36,7 +33,7 @@ import io.reactivex.disposables.Disposable;
 
 @Service
 public class BlockchainService {
-    private static final String CONTROLLER_ADDRESS = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
+    private static final String CONTROLLER_ADDRESS = "0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc";
     private static final Long CHAIN_ID = 43113L;
     private final Web3j web3j;
     private final Controller controller;
@@ -179,4 +176,3 @@ public class BlockchainService {
 //        return null;
     }
 }
-
