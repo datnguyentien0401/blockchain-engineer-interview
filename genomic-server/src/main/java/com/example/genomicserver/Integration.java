@@ -79,6 +79,10 @@ public final class Integration {
             final String docId = storageService.saveGene(userId, encryptedGene, signatureBytes, geneDataHash);
             System.out.println("Save gene success - docId: " + docId);
 
+            //verify signature
+            boolean validSignature = storageService.verifySignature(docId, user.getPublicKey());
+            System.out.println("Signature valid: " + validSignature);
+
             //Upload data to blockchain
             final String transactionHash = blockchainService.uploadData(docId);
             System.out.println("Uploaded data to blockchain success - Transaction hash: " + transactionHash);
@@ -95,8 +99,8 @@ public final class Integration {
             System.out.println("Confirm transaction");
 
             //verify signature
-            final boolean valid = storageService.verifySignature(docId, user.getPublicKey());
-            System.out.println("Signature valid: " + valid);
+            validSignature = storageService.verifySignature(docId, user.getPublicKey());
+            System.out.println("Signature valid: " + validSignature);
 
             //Retrieve encrypted data
             final byte[] geneEncryptedData = storageService.getGeneEncryptedData(docId);
