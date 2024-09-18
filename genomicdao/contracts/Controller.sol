@@ -54,6 +54,8 @@ contract Controller {
             confirmed: false
         });
 
+        docSubmits[docId] = true;
+
         emit UploadData(docId, sessionId);
 
         return sessionId;
@@ -67,14 +69,11 @@ contract Controller {
         uint256 riskScore
     ) public {
         // TODO: Implement this method: The proof here is used to verify that the result is returned from a valid computation on the gene data. For simplicity, we will skip the proof verification in this implementation. The gene data's owner will receive a NFT as a ownership certicate for his/her gene profile.
-        UploadSession storage session = sessions[sessionId];
-
-        require(session.user == msg.sender, "Invalid session owner");
-        require(!docSubmits[docId], "Doc already been submitted");
-        require(!session.confirmed, "Session is ended");
+        require(bytes(getDoc(docId).id).length == 0, "Doc already been submitted");
+        require(getSession(sessionId).user == msg.sender, "Invalid session owner");
+        require(!getSession(sessionId).confirmed, "Session is ended");
 
         // TODO: Verify proof, we can skip this step
-        session.proof = proof;
 
         // TODO: Update doc content
         docs[docId] = DataDoc({
@@ -90,8 +89,8 @@ contract Controller {
         pcspToken.reward(msg.sender, riskScore);
 
         // TODO: Close session
-        docSubmits[docId] = true;
-        session.confirmed = true;
+        sessions[sessionId].proof = "success";
+        sessions[sessionId].confirmed = true;
     }
 
     function getSession(uint256 sessionId) public view returns(UploadSession memory) {
