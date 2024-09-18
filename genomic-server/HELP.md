@@ -1,11 +1,12 @@
 # Getting started
 
 The flow of key features to demonstrate the interaction between the #Components in the Genomic application
+The flow implementation example in Integration.java
 
 ## Flow Overview
 ```bash
 1. Register: register new user
-2. Authentication: user is authenticated
+2. Authentication: user is authenticated by user address
 3. Encrypt Gene Data: encrypt Gene data by user's public key
 4. Sign Gene Data: sign the encrypted Gene data by user's private key
 5. Store Data: encrypted data, signature, hash is stored
@@ -14,4 +15,11 @@ The flow of key features to demonstrate the interaction between the #Components 
 8. Upload Data: upload data to blockchain
 9. Confirm Transaction: confirm transaction, create NFT, reward PCSP Token
 10. Retrieve Data: retrieve data and decrypt data
+```
+
+## Run
+```bash
+cd genomic-server
+./gradlew build
+./gradlew run
 ```
