@@ -6,7 +6,9 @@ import org.web3j.crypto.CipherException;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Sign;
 import org.web3j.crypto.Sign.SignatureData;
+import org.web3j.utils.Numeric;
 
+import java.math.BigInteger;
 import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,37 +32,37 @@ public class StorageService {
             throw new IllegalArgumentException("Signature invalid");
         }
 
-        final String fileId = Hex.toHexString(hash).substring(0, 16);
+        final String docId = Hex.toHexString(hash).substring(0, 16);
 
         lock.lock();
         try {
-            if (geneMap.containsKey(fileId)) {
+            if (geneMap.containsKey(docId)) {
                 throw new Exception("Gene already exists");
             }
-            geneMap.put(fileId, new Gene(userId, fileId, hash, encryptedData, signature));
+            geneMap.put(docId, new Gene(userId, docId, hash, encryptedData, signature));
 
-            return fileId;
+            return docId;
         } finally {
             lock.unlock();
         }
     }
 
-    private Gene getGene(String fileId) throws Exception {
-        if (!geneMap.containsKey(fileId)) {
+    private Gene getGene(String docId) throws Exception {
+        if (!geneMap.containsKey(docId)) {
             throw new Exception("Gene not found");
         }
 
-        final Gene gene = geneMap.get(fileId);
+        final Gene gene = geneMap.get(docId);
         if (Objects.isNull(gene)) {
             throw new Exception("Gene not found");
         }
         return gene;
     }
 
-    public byte[] getGeneEncryptedData(String fileId) throws Exception {
+    public byte[] getGeneEncryptedData(String docId) throws Exception {
         lock.lock();
         try {
-            return getGene(fileId).getEncryptedData();
+            return getGene(docId).getEncryptedData();
         } finally {
             lock.unlock();
         }
@@ -74,16 +76,16 @@ public class StorageService {
         return new Sign.SignatureData(v, r, s);
     }
 
-    public boolean verifySignature(String fileId, ECKeyPair keyPair) throws Exception {
+    public boolean verifySignature(String docId, String publicKey) throws Exception {
         lock.lock();
         try {
-            final var gene = getGene(fileId);
+            final var gene = getGene(docId);
 
             final byte[] signatureNoRecoverId = new byte[64];
             System.arraycopy(gene.getSignature(), 0, signatureNoRecoverId, 0, 64);
 
             return Sign.signedMessageToKey(gene.getHash(), toSignatureData(gene.getSignature()))
-                       .equals(keyPair.getPublicKey());
+                       .equals(Numeric.toBigInt(publicKey));
 
         } catch (SignatureException | CipherException e) {
             throw new Exception("Verify signature failed", e);

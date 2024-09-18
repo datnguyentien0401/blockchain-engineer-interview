@@ -56,7 +56,7 @@ public class AuthService {
         }
     }
 
-    public String getUserPubKey(Long userId) throws Exception {
+    public User getUser(Long userId) throws Exception{
         lock.lock();
         try {
             if (!userMap.containsKey(userId)) {
@@ -65,19 +65,9 @@ public class AuthService {
 
             final User user = userMap.get(userId);
             if (Objects.isNull(user)) {
-               throw new Exception("User not found");
+                throw new Exception("User not found");
             }
-
-            return user.getPublicKey();
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    public User getUser(Long userId) {
-        lock.lock();
-        try {
-            return userMap.get(userId);
+            return user;
         } finally {
             lock.unlock();
         }

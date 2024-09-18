@@ -2,6 +2,7 @@ package com.example.genomicserver.service;
 
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.ECKeyPair;
+import org.web3j.utils.Numeric;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -29,8 +30,8 @@ public class TEEService {
         return riskScore.intValue();
     }
 
-    public byte[] encrypt(BigInteger publicKey, String geneData) throws Exception {
-        final byte[] sharedSecret = generateSharedSecret(publicKey);
+    public byte[] encrypt(String publicKey, String geneData) throws Exception {
+        final byte[] sharedSecret = generateSharedSecret(Numeric.toBigInt(publicKey));
         return encryptAES(sharedSecret, geneData.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -64,7 +65,7 @@ public class TEEService {
         return cipherTextWithNonce;
     }
 
-    public static String decryptGeneData(ECKeyPair keyPair, byte[] encryptedData) throws Exception {
+    public static String decryptGeneData(BigInteger privateKey, byte[] encryptedData) throws Exception {
         // Extract the nonce and ciphertext
         if (encryptedData.length < GCM_NONCE_LENGTH) {
             throw new IllegalArgumentException("Invalid encrypted data");
@@ -73,7 +74,7 @@ public class TEEService {
         final byte[] nonce = Arrays.copyOfRange(encryptedData, 0, GCM_NONCE_LENGTH);
         final byte[] ciphertext = Arrays.copyOfRange(encryptedData, GCM_NONCE_LENGTH, encryptedData.length);
 
-        final byte[] sharedSecret = generateSharedSecret(keyPair.getPublicKey());
+        final byte[] sharedSecret = generateSharedSecret(ECKeyPair.create(privateKey).getPublicKey());
 
         final SecretKeySpec keySpec = new SecretKeySpec(sharedSecret, 0, 32, "AES");
         final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");

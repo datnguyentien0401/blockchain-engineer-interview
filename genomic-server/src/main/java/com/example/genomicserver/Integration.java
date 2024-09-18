@@ -2,14 +2,17 @@ package com.example.genomicserver;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.web3j.crypto.Credentials;
+import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Sign;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 
+import java.math.BigInteger;
 import java.security.Security;
 import java.util.Base64;
 
+import com.example.genomicserver.dto.User;
 import com.example.genomicserver.service.AuthService;
 import com.example.genomicserver.service.BlockchainService;
 import com.example.genomicserver.service.StorageService;
@@ -29,7 +32,8 @@ public final class Integration {
             final StorageService storageService = new StorageService();
 
             final Web3j web3 = Web3j.build(new HttpService("http://localhost:9650/ext/bc/LIFENetwork/rpc"));
-            final Credentials credentials = Credentials.create("5ff2266cb45528d048c3356fa958682b293cfecb080573a292789ecd52afa8e7");
+            final Credentials credentials = Credentials.create("56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027");
+            final ECKeyPair keyPair = credentials.getEcKeyPair();
 
             final String ethAddress = credentials.getAddress();
             System.out.println("User Address: " + ethAddress);
@@ -37,7 +41,7 @@ public final class Integration {
             final BlockchainService blockchainService = new BlockchainService(web3, credentials);
 
             //Register user
-            final String publicKeyHex = Numeric.toHexStringNoPrefix(credentials.getEcKeyPair().getPublicKey());
+            final String publicKeyHex = Numeric.toHexStringNoPrefix(keyPair.getPublicKey());
             final long userId = authService.createUser(publicKeyHex);
             System.out.println("Register user success - userId: " + userId);
 
@@ -49,9 +53,12 @@ public final class Integration {
             }
             System.out.println("Authentication success");
 
+            //Get user
+            final User user = authService.getUser(userId);
+
             //Encrypt gene data
             final String geneData = "geneTestData";
-            final byte[] encryptedGene = teeService.encrypt(credentials.getEcKeyPair().getPublicKey(), geneData);
+            final byte[] encryptedGene = teeService.encrypt(user.getPublicKey(), geneData);
             System.out.println("Encrypted gene data: " +  Base64.getEncoder().encodeToString(encryptedGene));
 
             //Sign encrypted data
@@ -69,33 +76,34 @@ public final class Integration {
             System.out.println("Signature: " + signatureBase64);
 
             //Save encrypted gene into storage
-            final String fileId = storageService.saveGene(userId, encryptedGene, signatureBytes, geneDataHash);
-            System.out.println("Save gene success - FileId: " + fileId);
+            final String docId = storageService.saveGene(userId, encryptedGene, signatureBytes, geneDataHash);
+            System.out.println("Save gene success - docId: " + docId);
 
             //Upload data to blockchain
-//            final String transactionHash = blockchainService.uploadData(fileId);
-//            System.out.println("Uploaded data to blockchain success - Transaction hash: " + transactionHash);
-//
-//            final BigInteger sessionId = blockchainService.handleUploadDataEvent(fileId);
+            final String transactionHash = blockchainService.uploadData(docId);
+            System.out.println("Uploaded data to blockchain success - Transaction hash: " + transactionHash);
+
+            final BigInteger sessionId = blockchainService.handleUploadDataEvent(docId);
+            System.out.println("SessionId: " + sessionId);
 
             //Calculate risk score
             final int riskScore = teeService.calculateRiskCore(geneData);
             System.out.println("Risk score: " + riskScore);
 
             //Confirm
-//            blockchainService.confirm(fileId, geneDataHashBase64, signatureBase64, sessionId, BigInteger.valueOf(riskScore));
-//            System.out.println("Confirm transaction");
+            blockchainService.confirm(docId, geneDataHashBase64, signatureBase64, sessionId, BigInteger.valueOf(riskScore));
+            System.out.println("Confirm transaction");
 
             //verify signature
-            final boolean valid = storageService.verifySignature(fileId, credentials.getEcKeyPair());
+            final boolean valid = storageService.verifySignature(docId, user.getPublicKey());
             System.out.println("Signature valid: " + valid);
 
             //Retrieve encrypted data
-            final byte[] geneEncryptedData = storageService.getGeneEncryptedData(fileId);
+            final byte[] geneEncryptedData = storageService.getGeneEncryptedData(docId);
             System.out.println("Retrieve encrypted data success");
 
             //Decrypt gene data
-            final String decryptGeneData = teeService.decryptGeneData(credentials.getEcKeyPair(), geneEncryptedData);
+            final String decryptGeneData = teeService.decryptGeneData(keyPair.getPrivateKey(), geneEncryptedData);
             System.out.println("Decrypted data success: " + decryptGeneData);
 
         } catch (Exception e) {
