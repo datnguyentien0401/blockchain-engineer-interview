@@ -29,6 +29,7 @@ import io.reactivex.Flowable;
 @Service
 public class BlockchainService {
     private static final String WALLET_ADDRESS = "0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc";
+    private static final Long CHAIN_ID = 43113L;
     private final Web3j web3j;
     private final Controller controller;
 
@@ -42,7 +43,7 @@ public class BlockchainService {
         final RawTransactionManager transactionManager = new RawTransactionManager(
                 web3j,
                 credentials,
-                43113L
+                CHAIN_ID
         );
         final BigInteger currentGasPrice = web3j.ethGasPrice().send().getGasPrice();
         final StaticGasProvider gasProvider = new StaticGasProvider(currentGasPrice,
