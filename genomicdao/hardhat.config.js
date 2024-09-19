@@ -19,6 +19,11 @@ module.exports = {
       url: 'https://api.avax-test.network/ext/bc/C/rpc',
       chainId: 43113,
       accounts: [`0x5ff2266cb45528d048c3356fa958682b293cfecb080573a292789ecd52afa8e7`]
+    },
+    "optimism-sepolia": {
+      url: "https://sepolia.infura.io/v3/",
+      chainId: 11155111,
+      accounts: [`0x5ff2266cb45528d048c3356fa958682b293cfecb080573a292789ecd52afa8e7`],
     }
   }
 };

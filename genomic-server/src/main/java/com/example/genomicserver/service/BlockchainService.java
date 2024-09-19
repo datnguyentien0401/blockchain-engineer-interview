@@ -3,6 +3,7 @@ package com.example.genomicserver.service;
 import org.springframework.stereotype.Service;
 
 import org.web3j.abi.EventEncoder;
+import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Event;
 import org.web3j.abi.datatypes.Utf8String;
@@ -33,8 +34,8 @@ import io.reactivex.disposables.Disposable;
 
 @Service
 public class BlockchainService {
-    private static final String CONTROLLER_ADDRESS = "0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc";
-    private static final Long CHAIN_ID = 43113L;
+    private static final String CONTROLLER_ADDRESS = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
+    private static final Long CHAIN_ID = 11155111L;
     private final Web3j web3j;
     private final Controller controller;
 
@@ -114,27 +115,10 @@ public class BlockchainService {
 //            error.printStackTrace();
 //        });
 
-//        final List<LogResult> logs = web3j.ethGetLogs(filter).send().getLogs();
-//        for (var logResult : logs) {
-//            final Log log = (Log) logResult.get();
-//            final List<Type> eventValues = FunctionReturnDecoder.decode(
-//                    log.getData(), UPLOADDATA_EVENT.getParameters()
-//            );
-//
-//            if (eventValues.size() == 2) {
-//                final Utf8String docId = (Utf8String) eventValues.get(0);
-//                final Uint256 sessionId = (Uint256) eventValues.get(1);
-//
-//                if (docId.getValue().equals(fileId)) {
-//                    System.out.printf("Found Event - DocId: %s - SessionId: %s%n", docId.getValue(), sessionId.getValue().toString());
-//                    return sessionId.getValue();
-//                }
-//            }
-//        }
         final Flowable<UploadDataEventResponse> uploadDataEventResponseFlowable = controller.uploadDataEventFlowable(
                 new DefaultBlockParameterNumber(fromBlock), new DefaultBlockParameterNumber(latestBlock));
 
-        final AtomicReference<BigInteger> sessionId = new AtomicReference<>();
+        final AtomicReference<BigInteger> sessionId = new AtomicReference<>(BigInteger.ONE);
 
         uploadDataEventResponseFlowable.subscribe(eventResponse -> {
             final String docId = eventResponse.docId;
@@ -173,6 +157,6 @@ public class BlockchainService {
 //                }
 //            }
 //        }
-//        return null;
+//        return BigInteger.ONE;
     }
 }
